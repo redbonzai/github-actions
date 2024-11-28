@@ -1,0 +1,34 @@
+name: Check Conventional Commit Compliance
+description: This GitHub Action checks if the commits in the history comply with the Conventional Commit Standard.
+
+inputs:
+  from-latest-tag:
+    description: Only checks commits from the latest tagged version
+    default: "true"
+    required: false
+  ignore-merge-commits:
+    description: Ignores merge commits
+    default: "true"
+    required: false
+
+runs:
+  using: composite
+  steps:
+    - uses: redbonzai/github-actions/setup-cocogitto@v1
+
+    - name: Check Conventional Commit Compliance
+      run: |
+        set -eux
+
+        # Generate CLI opts for cog
+        CLI_OPTS=''
+        if [ "${{ inputs.ignore-merge-commits }}" == "true" ]; then
+          CLI_OPTS+=' --ignore-merge-commits'
+        fi
+
+        if [ "${{ inputs.from-latest-tag }}" == "true" ]; then
+          CLI_OPTS+=' --from-latest-tag'
+        fi
+
+        cog check $CLI_OPTS || exit 1
+      shell: bash
